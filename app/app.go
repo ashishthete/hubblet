@@ -1,14 +1,15 @@
-package application
+package app
 
 import (
 	"fmt"
-	"huddlet/config"
-	"huddlet/db"
-	"huddlet/routes"
 	"log"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
+
+	"huddlet/app/db"
+	"huddlet/app/routes"
+	"huddlet/config"
 )
 
 type Application struct {
@@ -20,22 +21,25 @@ type Application struct {
 	Config *config.Config
 }
 
+var appInstance *Application
+
 func Run() error {
-	application, err := initApp()
+	appInstance, err := initApp()
 	if err != nil {
 		return err
 	}
-	defer application.Close()
+	defer appInstance.Close()
 
-	log.Println("Running application on port:", application.Port)
-	err = http.ListenAndServe(fmt.Sprintf(":%d", application.Port), application.Router)
+	log.Println("Running application on port:", appInstance.Port)
+	err = http.ListenAndServe(fmt.Sprintf(":%d", appInstance.Port), appInstance.Router)
 	return err
 }
 
 func initApp() (*Application, error) {
 	cfg := config.Get()
-	db, err := db.Get(cfg.GetDBConnStr())
+	db, err := db.Connect(cfg.GetDBConnStr())
 	if err != nil {
+		log.Println("Error connecting to db")
 		return nil, err
 	}
 
@@ -47,6 +51,10 @@ func initApp() (*Application, error) {
 		Router: routes.Get(cfg),
 		DB:     db,
 	}, nil
+}
+
+func GetSecret() string {
+	return appInstance.Config.GetSecret()
 }
 
 func (app *Application) Close() {

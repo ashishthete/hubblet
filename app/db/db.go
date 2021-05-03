@@ -14,22 +14,31 @@ type DB struct {
 	Postgres *sqlx.DB
 }
 
-func Get(connStr string) (*DB, error) {
-	db, err := get(connStr)
-	if err != nil {
-		return nil, err
-	}
+var dbInstance *DB
 
-	return &DB{
-		Postgres: db,
-	}, nil
+func Connect(connStr string) (*DB, error) {
+	if dbInstance == nil {
+		db, err := connect(connStr)
+		if err != nil {
+			return nil, err
+		}
+
+		dbInstance = &DB{
+			Postgres: db,
+		}
+	}
+	return dbInstance, nil
+}
+
+func GetPostgresDB() *sqlx.DB {
+	return dbInstance.Postgres
 }
 
 func (d *DB) Close() error {
 	return d.Postgres.Close()
 }
 
-func get(connStr string) (*sqlx.DB, error) {
+func connect(connStr string) (*sqlx.DB, error) {
 	db, err := sqlx.Connect("postgres", connStr)
 	if err != nil {
 		log.Println("DB Error", err)

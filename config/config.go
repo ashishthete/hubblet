@@ -15,6 +15,7 @@ type Config struct {
 	dbName string
 	env    string
 	port   int
+	secret string
 }
 
 func Get() *Config {
@@ -28,6 +29,7 @@ func Get() *Config {
 	flag.StringVar(&conf.env, "env", "dev", "Enviourment")
 	flag.IntVar(&conf.port, "port", 8080, "Server Port")
 
+	flag.StringVar(&conf.secret, "secret", "secret", "Enviourment")
 	flag.Parse()
 
 	return conf
@@ -35,6 +37,10 @@ func Get() *Config {
 
 func (c *Config) GetPort() int {
 	return c.port
+}
+
+func (c *Config) GetSecret() string {
+	return c.secret
 }
 
 func (c *Config) GetEnviourment() string {
