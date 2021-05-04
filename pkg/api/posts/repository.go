@@ -98,10 +98,12 @@ func (repo Repository) fetchComments(db *sqlx.DB, postIds []string) (map[string]
 			log.Println("fetchComments Error in scan", err)
 		}
 
-		if comments, ok := postComments[comment.PostID]; ok {
-			postComments[comment.PostID] = append(comments, &comment)
-		} else {
-			postComments[comment.PostID] = []*CommentRelationshipModel{&comment}
+		if !comment.ParentID.Valid {
+			if comments, ok := postComments[comment.PostID]; ok {
+				postComments[comment.PostID] = append(comments, &comment)
+			} else {
+				postComments[comment.PostID] = []*CommentRelationshipModel{&comment}
+			}
 		}
 
 		references[comment.ID] = &comment
